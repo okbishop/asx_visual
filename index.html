@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+@import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+.title {
+    font-family: "Yanone Kaffeesatz";
+    text-rendering: optimizeLegibility;
+    font-size: 42px;
+    margin-top: .3em;
+    margin-bottom: 0; 
+}
+.notes {
+    font-family: "Yanone Kaffeesatz";
+    text-rendering: optimizeLegibility;
+    font-size: 14px;
+    margin-top: .3em;
+    margin-bottom: 0; 
+	
+}
+svg {
+  font: 10px sans-serif;
+}
+
+path {
+  fill: lightgrey;
+  stroke: black;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+
+	
+<div id="chart">
+  <div id="line-chart" class="chart">
+    <div class="title">ASX forward price curves</div>
+    <div class="notes"> <p>Notes: </p>
+    <ol> 
+    <li>best viewed with Chrome or Firefox;</li>
+    </ol></div>
+  </div>
+</div>
+
+
+<!--Now for the fun stuff, d3/Javascript code -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="crossfilter.v1.min.js"></script>
+<script>
+
+var margin = {top: 10, right: 10, bottom: 100, left: 40},
+    margin2 = {top: 430, right: 10, bottom: 20, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    height2 = 500 - margin2.top - margin2.bottom;
+
+var parseDate = d3.time.format("%b %Y").parse;
+
+var x = d3.time.scale().range([0, width]),
+    x2 = d3.time.scale().range([0, width]),
+    y = d3.scale.linear().range([height, 0]),
+    y2 = d3.scale.linear().range([height2, 0]);
+
+var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+    yAxis = d3.svg.axis().scale(y).orient("left");
+
+var brush = d3.svg.brush()
+    .x(x2)
+    .on("brush", brush);
+var area = d3.svg.area()
+    .interpolate("step-before")
+    .x(function(d) { return x(d.date); })
+    .y0(height)
+    .y1(function(d) { return y(d.price); });
+
+var area2 = d3.svg.area()
+    .interpolate("step-before")
+    .x(function(d) { return x2(d.date); })
+    .y0(height2)
+    .y1(function(d) { return y2(d.price); });
+
+var svg = d3.select("#line-chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var focus = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = svg.append("g")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+//Attempt to load in the ASX quarterly data, and the outage listing data
+var ota_data, ben_data, remaining = 2;
+  d3.csv("ota_data.csv", function(error,csv) {
+    ota_data = csv;
+    if (!--remaining) doSomething(); //when remaining = 0 this becomes true, and we then run doSomething,
+  });
+  d3.csv("ben_data.csv", function(error, csv) {
+    ben_data = csv;
+    if (!--remaining) doSomething(); //when remaining = 0 this becomes true, and we then run doSomething,
+  });
+
+  function doSomething() {
+      var parseDate = d3.time.format("%Y-%m-%d").parse;
+      console.log("hello Joel")
+      ota_data.forEach(function(d){
+          d.date = parseDate(d.date);
+          console.log(d.date);
+          
+      });
+  
+  }; 
+
+</script>
+
